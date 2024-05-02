@@ -1,13 +1,30 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { getListCountryByName } from "@/services/country";
+import { Country } from "@/types/country";
 
 const input = ref("");
+const loading = ref(false);
 const inputTimeouts = ref(undefined);
 const showListCountries = ref(false);
-const onInputKeyup = () => {
+const listCountries = ref<Country[]>([]);
+const onInputKeyup = async () => {
+  loading.value = true;
+
   clearTimeout(inputTimeouts.value);
-  inputTimeouts.value = setTimeout(() => {
+  inputTimeouts.value = setTimeout(async () => {
     showListCountries.value = input.value?.length > 0;
+
+    let res: any;
+    if (input.value?.length > 0) {
+      res = await getListCountryByName(input.value);
+
+      if (res.data?.status !== 404) {
+        listCountries.value = res?.data ?? ([] as Country[]);
+      }
+    }
+
+    loading.value = false;
   }, 360);
 };
 </script>
@@ -42,19 +59,30 @@ const onInputKeyup = () => {
         </div>
         <div
           v-if="showListCountries"
-          class="absolute list flex flex-col shadow-md w-full mt-5 rounded-xl text-[18px]"
+          class="absolute shadow-md w-full mt-5 rounded-xl text-[18px]"
         >
-          <RouterLink
-            class="hover:bg-[#F4F4F4] py-2 px-5"
-            :to="{
-              name: 'detail',
-              params: {
-                idd: 'detail',
-              },
-            }"
+          <div class="py-2 px-5" v-if="loading">Loading ...</div>
+          <div
+            class="text-red-600 py-2 px-5"
+            v-else-if="!loading && !listCountries.length"
           >
-            {{ "Indonesia" }}
-          </RouterLink>
+            Data Not Found
+          </div>
+          <div class="flex flex-col" v-if="listCountries.length">
+            <RouterLink
+              v-for="(country, index) in listCountries"
+              :key="index"
+              class="hover:bg-[#F4F4F4] py-2 px-5"
+              :to="{
+                name: 'detail',
+                params: {
+                  name: country.name?.common,
+                },
+              }"
+            >
+              {{ country.name?.common }}
+            </RouterLink>
+          </div>
         </div>
       </div>
     </div>

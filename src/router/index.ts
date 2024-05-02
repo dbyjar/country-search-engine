@@ -9,7 +9,7 @@ const router = createRouter({
     { path: "/", component: Index },
     {
       name: "detail",
-      path: "/detail/:idd",
+      path: "/detail/:name",
       component: Detail,
     },
   ],

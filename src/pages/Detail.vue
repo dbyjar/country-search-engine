@@ -1,13 +1,58 @@
 <script setup lang="ts">
+import { computed, onBeforeMount, ref } from "vue";
+import { useRoute } from "vue-router";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
+import {
+  getCountryByFullname,
+  getTheCallingCode,
+  getTheCurrencies,
+} from "@/services/country";
+import { Country } from "@/types/country";
+
 import intersectImgUrl from "../assets/Intersect.svg";
+
+const location = useRoute();
+const country = ref<Country>();
+const totalCallingCode = ref<number>(0);
+const totalCurrencies = ref<number>(0);
+
+onBeforeMount(async () => {
+  if (location.params.name) {
+    const res = await getCountryByFullname(location.params.name);
+    country.value = res?.data[0] ?? {};
+
+    // totalCallingCode.value = await getTheCallingCode(callingCode.value)
+    // totalCurrencies.value = await getTheCurrencies(callingCode.value)
+
+    const r = await getTheCallingCode(callingCode.value);
+    const ds = await getTheCurrencies(callingCode.value);
+
+    console.log({
+      r,
+      ds,
+    });
+  }
+});
+
+const currency = computed(() => {
+  const key = Object.keys(country?.value?.currencies ?? {});
+  return key[0];
+});
+
+const callingCode = computed(() => {
+  const idd = country?.value?.idd;
+  const suffixesToString = idd?.suffixes.join("");
+
+  return idd?.root + suffixesToString;
+});
 </script>
 
 <template>
   <div class="p-12">
-    <Button class="py-6 bg-[#8362F2]">
+    <Button class="py-6 bg-[#8362F2]" @click="$router.push('/')">
       <span class="me-2">
         <svg
           width="18"
@@ -37,12 +82,16 @@ import intersectImgUrl from "../assets/Intersect.svg";
     </Button>
 
     <div class="content mt-12">
-      <h1 class="text-[48px]">Indonesia {{ ":flag" }}</h1>
+      <h1 class="text-[48px]">
+        {{ country?.name?.common }} {{ country?.flag }}
+      </h1>
       <div class="flex gap-2">
-        <Badge class="rounded-xl bg-[#8DD4CC] text-xs">ID</Badge>
-        <Badge class="rounded-xl bg-[#8DD4CC] text-xs">Indonesia</Badge>
-        <Badge class="rounded-xl bg-[#8DD4CC] text-xs">
-          Republik Indonesia
+        <Badge
+          class="rounded-xl bg-[#8DD4CC] text-xs"
+          v-for="(alt, index) in country?.altSpellings"
+          :key="index"
+        >
+          {{ alt }}
         </Badge>
       </div>
 
@@ -51,7 +100,11 @@ import intersectImgUrl from "../assets/Intersect.svg";
           <div>
             <label class="text-lg">Latlong</label>
             <div class="detail text-[#8362F2] text-5xl font-semibold mt-3">
-              -5.0, 120.0
+              <span v-for="(latlng, index) in country?.latlng" :key="index">
+                {{
+                  `${latlng}${index < country?.latlng?.length - 1 ? ", " : ""}`
+                }}
+              </span>
             </div>
           </div>
 
@@ -63,9 +116,27 @@ import intersectImgUrl from "../assets/Intersect.svg";
         </div>
         <div class="relative px-8 py-6 shadow-md rounded w-full">
           <div>
-            <p>Capital: Jakarta</p>
-            <p>Region: Asia</p>
-            <p>Subregion: South-Eastern Asia</p>
+            <div>
+              <label for="capital">Capital: </label>
+              <span v-for="(capital, index) in country?.capital" :key="index">
+                {{ capital }}
+              </span>
+            </div>
+            <div>
+              <label for="region">Region: </label>
+              <span v-for="(region, index) in country?.region" :key="index">
+                {{ region }}
+              </span>
+            </div>
+            <div>
+              <label for="subregion">Subregion: </label>
+              <span
+                v-for="(subregion, index) in country?.subregion"
+                :key="index"
+              >
+                {{ subregion }}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -75,7 +146,7 @@ import intersectImgUrl from "../assets/Intersect.svg";
           <div>
             <label class="text-lg">Calling Code</label>
             <div class="detail text-[#8362F2] text-5xl font-semibold my-3">
-              62
+              {{ callingCode }}
             </div>
             <span>
               <a href="#" class="text-[#8362F2] underline hover:pointer">
@@ -89,7 +160,7 @@ import intersectImgUrl from "../assets/Intersect.svg";
           <div>
             <label class="text-lg">Currency</label>
             <div class="detail text-[#8362F2] text-5xl font-semibold my-3">
-              IDR
+              {{ currency }}
             </div>
             <span>
               <a href="#" class="text-[#8362F2] underline hover:pointer">
@@ -103,5 +174,3 @@ import intersectImgUrl from "../assets/Intersect.svg";
     </div>
   </div>
 </template>
-
-<style lang=""></style>
