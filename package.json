@@ -10,12 +10,14 @@
   },
   "dependencies": {
     "@radix-icons/vue": "^1.0.0",
+    "axios": "^1.6.8",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "radix-vue": "^1.7.3",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
-    "vue": "^3.4.21"
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.2"
   },
   "devDependencies": {
     "@types/node": "^20.12.8",
