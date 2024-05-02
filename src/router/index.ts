@@ -8,6 +8,7 @@ const router = createRouter({
   routes: [
     { path: "/", component: Index },
     {
+      name: "detail",
       path: "/detail/:idd",
       component: Detail,
     },

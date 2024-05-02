@@ -82,3 +82,7 @@
 body {
   font-family: "Roboto", sans-serif;
 }
+
+input[type="text"]:focus {
+  border: 3px solid #8362f2 !important;
+}
