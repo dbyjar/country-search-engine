@@ -29,14 +29,11 @@ export const getCountryByFullname = async (fullname: string | any) => {
   return res;
 };
 
+// API v2 untuk currency dan callingcode tidak bisa diakses
 export const getTheCurrencies = async (currency: string) => {
-  return await axios.get(
-    `https://restcountries.eu/rest/v2/currency/${currency}`
-  );
+  return await axios.get(`${countryURLAPI}/v2/currency/${currency}`);
 };
 
 export const getTheCallingCode = async (callingcode: string) => {
-  return await axios.get(
-    `https://restcountries.eu/rest/v2/callingcode/${callingcode}`
-  );
+  return await axios.get(`${countryURLAPI}/v2/callingcode/${callingcode}`);
 };

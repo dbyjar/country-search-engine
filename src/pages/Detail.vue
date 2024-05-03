@@ -1,9 +1,16 @@
 <script setup lang="ts">
-import { computed, onBeforeMount, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import {
   getCountryByFullname,
@@ -15,24 +22,30 @@ import { Country } from "@/types/country";
 import intersectImgUrl from "../assets/Intersect.svg";
 
 const location = useRoute();
+const loading = ref<boolean>(true);
 const country = ref<Country>();
 const totalCallingCode = ref<number>(0);
-const totalCurrencies = ref<number>(0);
-
-onBeforeMount(async () => {
+const totalCurrency = ref<number>(0);
+onMounted(async () => {
   if (location.params.name) {
     const res = await getCountryByFullname(location.params.name);
     country.value = res?.data[0] ?? {};
 
-    // totalCallingCode.value = await getTheCallingCode(callingCode.value)
-    // totalCurrencies.value = await getTheCurrencies(callingCode.value)
+    setTimeout(() => {
+      loading.value = false;
+    }, 1000);
 
-    const r = await getTheCallingCode(callingCode.value);
-    const ds = await getTheCurrencies(callingCode.value);
+    // API v2 untuk currency dan callingcode tidak bisa diakses
+
+    // totalCallingCode.value = await getTheCallingCode(callingCode.value)
+    // totalCurrency.value = await getTheCurrencies(callingCode.value)
+
+    const cc = await getTheCallingCode(callingCode.value);
+    const c = await getTheCurrencies(callingCode.value);
 
     console.log({
-      r,
-      ds,
+      cc,
+      c,
     });
   }
 });
@@ -81,7 +94,7 @@ const callingCode = computed(() => {
       <span>Back To Home</span>
     </Button>
 
-    <div class="content mt-12">
+    <div class="content mt-12" v-if="!loading">
       <h1 class="text-[48px]">
         {{ country?.name?.common }} {{ country?.flag }}
       </h1>
@@ -149,9 +162,18 @@ const callingCode = computed(() => {
               {{ callingCode }}
             </div>
             <span>
-              <a href="#" class="text-[#8362F2] underline hover:pointer">
-                1 country
-              </a>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <a href="#" class="text-[#8362F2] underline hover:pointer">
+                      {{ totalCallingCode }} country
+                    </a>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Indonesia</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               with this calling code
             </span>
           </div>
@@ -163,13 +185,37 @@ const callingCode = computed(() => {
               {{ currency }}
             </div>
             <span>
-              <a href="#" class="text-[#8362F2] underline hover:pointer">
-                1 country
-              </a>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <a href="#" class="text-[#8362F2] underline hover:pointer">
+                      {{ totalCurrency }} country
+                    </a>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Indonesia</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               with this currency
             </span>
           </div>
         </div>
+      </div>
+    </div>
+
+    <div class="content mt-12" v-else>
+      <div class="space-y-2">
+        <Skeleton class="h-8 w-[250px]" />
+        <Skeleton class="h-4 w-[200px]" />
+      </div>
+      <div class="flex gap-12 mt-12">
+        <Skeleton class="h-32 w-full" />
+        <Skeleton class="h-32 w-full" />
+      </div>
+      <div class="flex gap-12 mt-12">
+        <Skeleton class="h-32 w-full" />
+        <Skeleton class="h-32 w-full" />
       </div>
     </div>
   </div>
